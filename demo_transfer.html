@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hedging Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  /* Brand fonts. Drop the .otf files into /fonts and they'll
+     be used automatically. Falls back to Arial per brand guide. */
+  @font-face {
+    font-family: 'PP Neue Machina';
+    src: url('../fonts/PPNeueMachina-Regular.otf') format('opentype');
+    font-weight: 375; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'PP Neue Machina';
+    src: url('../fonts/PPNeueMachina-Ultrabold.otf') format('opentype');
+    font-weight: 600; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'PP Telegraf';
+    src: url('../fonts/TelegrafRegular_272984568a25d8528fe2de8b20b29011.otf') format('opentype');
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'PP Telegraf';
+    src: url('../fonts/Telegraf_UltraBold_800.otf') format('opentype');
+    font-weight: 700; font-style: normal; font-display: swap;
+  }
+
+  :root {
+    --soft-black: #191919;
+    --off-white: #FCFCFC;
+    --grey-dark: #606060;
+    --grey: #909090;
+    --grey-light: #D4D4D4;
+    --grey-soft: #F5F5F5;
+    --blue: #0075E7;
+    --blue-bright: #8EC2FF;
+    --blue-light: #C3DEFF;
+    --green: #00A368;
+    --green-bright: #46D387;
+    --green-light: #A8EDB3;
+    --red: #FF5C38;
+    --red-bright: #FF9078;
+    --red-light: #FFC4BC;
+    --orange: #FFC04E;
+    --orange-bright: #FFD385;
+    --orange-light: #FFE8C0;
+    --display: 'PP Neue Machina', 'Arial', sans-serif;
+    --body: 'PP Telegraf', 'Arial', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--off-white);
+    color: var(--soft-black);
+    font-family: var(--body);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+  .page { max-width: 1320px; margin: 0 auto; padding: 0 90px; }
+
+  /* COVER — dark */
+  .cover {
+    background: var(--soft-black);
+    color: var(--off-white);
+    min-height: 100vh;
+    padding: 56px 90px 48px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  .cover-eyebrow {
+    font-family: var(--body);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--off-white);
+    opacity: 0.7;
+  }
+  .ecohz-mark { width: 90px; height: auto; }
+  .ecohz-mark svg { width: 100%; height: auto; display: block; }
+
+  .cover-body {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 60px;
+    align-items: center;
+    padding: 80px 0 40px;
+  }
+  .cover-headline {
+    font-family: var(--display);
+    font-weight: 375;
+    font-size: clamp(64px, 10vw, 144px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: var(--off-white);
+  }
+  .cover-headline .accent { display: block; }
+  .cover-sub {
+    margin-top: 32px;
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--off-white);
+    opacity: 0.85;
+    max-width: 540px;
+  }
+  .cover-graphic {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cover-graphic svg { width: 100%; max-width: 360px; height: auto; }
+
+  .cover-meta {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    border-top: 1px solid rgba(252, 252, 252, 0.18);
+    padding-top: 28px;
+    color: var(--off-white);
+  }
+  .cover-meta .col .label {
+    font-family: var(--body);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .cover-meta .col .value {
+    font-family: var(--display);
+    font-weight: 375;
+    font-size: 20px;
+    color: var(--off-white);
+    line-height: 1.1;
+  }
+
+  /* SECTIONS */
+  section { padding: 96px 0 32px; }
+  .section-head {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 36px;
+    border-top: 1px solid var(--soft-black);
+    padding-top: 20px;
+    margin-bottom: 44px;
+  }
+  .section-num {
+    font-family: var(--body);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--soft-black);
+    padding-top: 6px;
+    font-weight: 700;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-weight: 375;
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 0.95;
+    letter-spacing: -0.015em;
+    color: var(--soft-black);
+  }
+  .section-title .accent { color: var(--blue); }
+
+  /* Book bar */
+  .book-bar {
+    margin: 20px 0 36px;
+    padding: 18px 0;
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    gap: 36px;
+    align-items: center;
+    border-top: 1px solid var(--soft-black);
+    border-bottom: 1px solid var(--soft-black);
+  }
+  .book-bar .tag {
+    font-family: var(--body);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--soft-black);
+    opacity: 0.65;
+    font-weight: 700;
+  }
+  .book-bar .name {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 375;
+  }
+  .book-bar .pill {
+    font-family: var(--body);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 8px 14px;
+    color: var(--off-white);
+  }
+
+  /* KPI strip */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--soft-black);
+    border-bottom: 1px solid var(--soft-black);
+  }
+  .kpi-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+  .kpi-grid.cols-5 .kpi { padding: 28px 18px 26px; }
+  .kpi-grid.cols-5 .kpi-value { font-size: 42px; }
+  .kpi-grid.cols-6 { grid-template-columns: repeat(6, 1fr); }
+  .kpi-grid.cols-6 .kpi { padding: 26px 16px 24px; }
+  .kpi-grid.cols-6 .kpi-value { font-size: 34px; letter-spacing: -0.015em; }
+  .kpi-grid.cols-6 .kpi-value .unit { font-size: 13px; margin-left: 4px; }
+  .kpi-grid.cols-6 .kpi-foot { font-size: 11px; }
+  .kpi {
+    padding: 32px 24px 30px;
+    border-right: 1px solid var(--grey-light);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .kpi:last-child { border-right: none; }
+  .kpi-label {
+    font-family: var(--body);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--soft-black);
+    opacity: 0.6;
+    font-weight: 700;
+  }
+  .kpi-value {
+    font-family: var(--display);
+    font-weight: 375;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--soft-black);
+  }
+  .kpi-value .unit {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--soft-black);
+    opacity: 0.6;
+    margin-left: 6px;
+    font-family: var(--body);
+  }
+  .kpi-foot {
+    font-family: var(--body);
+    font-size: 12px;
+    color: var(--soft-black);
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    font-family: var(--body);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .badge.up { background: var(--green-light); color: var(--green); }
+  .badge.down { background: var(--red-light); color: var(--red); }
+
+  /* Cards */
+  .grid-2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; margin-top: 40px; }
+  .grid-2-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+  .card {
+    background: var(--off-white);
+    border: 1px solid var(--grey-light);
+    padding: 30px 32px 32px;
+  }
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--grey-light);
+    gap: 16px;
+  }
+  .card-title {
+    font-family: var(--display);
+    font-weight: 375;
+    font-size: 22px;
+    letter-spacing: -0.005em;
+    color: var(--soft-black);
+  }
+  .card-sub {
+    font-family: var(--body);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--soft-black);
+    opacity: 0.6;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .chart-wrap { position: relative; height: 320px; }
+  .chart-wrap.tall { height: 380px; }
+  .chart-wrap.xtall { height: 460px; }
+
+  /* Tables */
+  table.fin {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--body);
+    font-size: 13px;
+  }
+  table.fin th, table.fin td {
+    padding: 12px 8px;
+    text-align: right;
+    border-bottom: 1px solid var(--grey-light);
+  }
+  table.fin th:first-child, table.fin td:first-child { text-align: left; }
+  table.fin thead th {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--soft-black);
+    opacity: 0.6;
+    font-weight: 700;
+    border-bottom: 1px solid var(--soft-black);
+  }
+  table.fin tbody tr:last-child td { border-bottom: 1px solid var(--soft-black); }
+  table.fin tr.total td { font-weight: 700; color: var(--soft-black); }
+  table.fin .num { font-variant-numeric: tabular-nums; }
+  table.fin .muted { color: var(--soft-black); opacity: 0.4; }
+
+  /* Hedge list */
+  .hedge-list { margin-top: 24px; }
+  .hedge-row {
+    display: grid;
+    grid-template-columns: 100px 70px 1fr 180px 70px 110px 120px;
+    gap: 16px;
+    padding: 18px 0;
+    align-items: center;
+    border-bottom: 1px solid var(--grey-light);
+    font-family: var(--body);
+    font-size: 12px;
+  }
+  .hedge-row.header {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--soft-black);
+    opacity: 0.6;
+    border-bottom: 1px solid var(--soft-black);
+    padding-bottom: 12px;
+    font-weight: 700;
+  }
+  .hedge-row .prod { font-family: var(--body); font-size: 13px; color: var(--soft-black); }
+  .hedge-row .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .chip {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--off-white);
+  }
+  .chip.blue { background: var(--blue); }
+  .chip.green { background: var(--green); }
+  .chip.year { background: var(--grey-soft); color: var(--soft-black); }
+
+  /* Footer */
+  footer {
+    margin-top: 96px;
+    background: var(--soft-black);
+    color: var(--off-white);
+    padding: 56px 90px;
+  }
+  .footer-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 32px;
+  }
+  footer .foot-title {
+    font-family: var(--display);
+    font-size: 22px;
+    color: var(--off-white);
+    font-weight: 375;
+    letter-spacing: -0.01em;
+    margin-bottom: 12px;
+  }
+  footer .foot-body {
+    font-family: var(--body);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--off-white);
+    opacity: 0.7;
+  }
+
+  @media print {
+    body { background: #fff; }
+    .cover { page-break-after: always; }
+    section { page-break-inside: avoid; }
+  }
+
+  /* Access gate overlay */
+  .gate {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--soft-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .gate-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 48px 40px 40px;
+    background: var(--soft-black);
+    color: var(--off-white);
+    border: 1px solid rgba(252, 252, 252, 0.18);
+  }
+  .gate-mark {
+    width: 72px;
+    margin-bottom: 32px;
+  }
+  .gate-mark svg { width: 100%; height: auto; display: block; }
+  .gate-eyebrow {
+    font-family: var(--body);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .gate-title {
+    font-family: var(--display);
+    font-weight: 375;
+    font-size: 32px;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    margin-bottom: 8px;
+  }
+  .gate-sub {
+    font-family: var(--body);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--off-white);
+    opacity: 0.7;
+    margin-bottom: 32px;
+  }
+  .gate-form { display: flex; flex-direction: column; gap: 12px; }
+  .gate-input {
+    font-family: var(--body);
+    font-size: 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(252, 252, 252, 0.3);
+    padding: 12px 0;
+    color: var(--off-white);
+    outline: none;
+    width: 100%;
+    letter-spacing: 0.08em;
+  }
+  .gate-input:focus {
+    border-bottom-color: var(--off-white);
+  }
+  .gate-input::placeholder { color: rgba(252, 252, 252, 0.4); }
+  .gate-btn {
+    font-family: var(--body);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 14px 24px;
+    background: var(--off-white);
+    color: var(--soft-black);
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: opacity 0.15s;
+  }
+  .gate-btn:hover { opacity: 0.85; }
+  .gate-error {
+    font-family: var(--body);
+    font-size: 12px;
+    color: #FF9078;
+    margin-top: 8px;
+    min-height: 18px;
+  }
+  body.unlocked .gate { display: none; }
+  body:not(.unlocked) { overflow: hidden; }
+</style>
+</head>
+<body>
+
+<!-- ACCESS GATE — casual password protection. Removed on successful unlock. -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-mark" id="gate-mark"></div>
+    <div class="gate-eyebrow">Protected Document</div>
+    <div class="gate-title">Enter access code</div>
+    <div class="gate-sub">This report is shared with authorised recipients only.</div>
+    <form class="gate-form" id="gate-form" autocomplete="off">
+      <input type="password" id="gate-input" class="gate-input" placeholder="Access code" autofocus>
+      <div class="gate-error" id="gate-error"></div>
+      <button type="submit" class="gate-btn">Unlock report</button>
+    </form>
+  </div>
+</div>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-eyebrow" id="cover-eyebrow"></div>
+    <div class="ecohz-mark" id="ecohz-mark"></div>
+  </div>
+
+  <div class="cover-body">
+    <div>
+      <h1 class="cover-headline" id="cover-headline"></h1>
+      <p class="cover-sub" id="cover-sub"></p>
+    </div>
+    <div class="cover-graphic" id="cover-graphic"></div>
+  </div>
+
+  <div class="cover-meta">
+    <div class="col"><div class="label" id="meta-prepared-label"></div><div class="value" id="meta-prepared-value"></div></div>
+    <div class="col"><div class="label" id="meta-counterparty-label"></div><div class="value" id="meta-counterparty-value"></div></div>
+    <div class="col"><div class="label">Period</div><div class="value" id="meta-period-value"></div></div>
+    <div class="col"><div class="label" id="meta-benchmark-label"></div><div class="value" id="meta-benchmark-value"></div></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- § 01 PORTFOLIO -->
+<section>
+  <div class="section-head">
+    <div class="section-num" id="portfolio-section-label"></div>
+    <h2 class="section-title" id="portfolio-section-title"></h2>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title" id="portfolio-chart-title"></div>
+      <div class="card-sub" id="portfolio-chart-sub"></div>
+    </div>
+    <div class="chart-wrap tall"><canvas id="chartPortfolio"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-top:32px">
+    <div class="card-head">
+      <div class="card-title" id="portfolio-table-title"></div>
+      <div class="card-sub" id="portfolio-table-sub"></div>
+    </div>
+    <table class="fin">
+      <thead><tr id="portfolio-thead"></tr></thead>
+      <tbody id="tbl-portfolio"></tbody>
+    </table>
+  </div>
+</section>
+
+<div id="book-sections"></div>
+
+<!-- HEDGE LIST -->
+<section>
+  <div class="section-head">
+    <div class="section-num" id="hedges-section-label"></div>
+    <h2 class="section-title" id="hedges-section-title"></h2>
+  </div>
+  <div class="hedge-list">
+    <div class="hedge-row header" id="hedges-thead"></div>
+    <div id="hedge-rows"></div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="foot-title" id="footer-title"></div>
+      <div class="foot-body">
+        <span id="footer-line-1"></span><br>
+        <span id="footer-line-2"></span>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div class="foot-title" style="font-size:14px;letter-spacing:.18em;text-transform:uppercase">Generated</div>
+      <div class="foot-body"><span id="footer-prepared"></span></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+const D = {"vendor_name": "Eviny Fornybar AS", "report_title": "Hedging Report", "prepared_date": "15 April 2026", "review_period": "2026 Q1", "books_meta": {"Hydro-Old": {"label": "Norwegian Hydro", "subtitle": "Norway \u00b7 No support", "tag": "Primary Book", "pill": "Fixed Transfer", "color": "blue", "graphic_element": 1, "show_uplift": true, "show_icap_chart": true, "match_keywords": ["Hydro-Old"], "exclude_keywords": ["Hellandsfoss"], "annual_volume_mwh": {"2026": 300000, "2027": 480000}}, "Hellandsfoss": {"label": "Hellandsfoss", "subtitle": "Modalen \u00b7 Bra Milj\u00f6val", "tag": "Device Book", "pill": "Device-specific", "color": "green", "graphic_element": 2, "match_keywords": ["Hellandsfoss"], "exclude_keywords": [], "annual_volume_mwh": {"2026": 165561, "2027": 165561}}}, "annual": {"Hydro-Old": {"2026": 300000, "2027": 480000}, "Hellandsfoss": {"2026": 165561, "2027": 165561}}, "quarterly_target": {"Hydro-Old": {"2026": 75000.0, "2027": 120000.0}, "Hellandsfoss": {"2026": 41390.25, "2027": 41390.25}}, "bench": {"2026": 0.7853333333333334, "2027": 0.9353333333333335}, "books": {"Hydro-Old": {"2026": {"hedged": 85000.0, "revenue": 51500.0, "vwap": 0.6058823529411764, "q_vol": [75000.0, 10000.0, 0.0, 0.0], "q_val": [44500.0, 7000.0, 0.0, 0.0], "q_vwap": [0.5933333333333334, 0.7, 0, 0]}, "2027": {"hedged": 75000.0, "revenue": 85000.0, "vwap": 1.1333333333333333, "q_vol": [25000.0, 0.0, 50000.0, 0.0], "q_val": [25000.0, 0.0, 60000.0, 0.0], "q_vwap": [1.0, 0, 1.2, 0]}}, "Hellandsfoss": {"2026": {"hedged": 33200.0, "revenue": 24125.0, "vwap": 0.7266566265060241, "q_vol": [14450.0, 6250.0, 6250.0, 6250.0], "q_val": [6031.25, 6031.25, 6031.25, 6031.25], "q_vwap": [0.41738754325259514, 0.965, 0.965, 0.965]}, "2027": {"hedged": 0.0, "revenue": 0.0, "vwap": 0, "q_vol": [0.0, 0.0, 0.0, 0.0], "q_val": [0.0, 0.0, 0.0, 0.0], "q_vwap": [0, 0, 0, 0]}}}, "icap_ts": {"dates": ["Jan 02", "Jan 09", "Jan 16", "Jan 23", "Jan 30", "Feb 06", "Feb 13", "Feb 20", "Feb 27", "Mar 06", "Mar 13", "Mar 20", "Mar 27", "Apr 03", "Apr 10"], "p2026": [0.61, 0.52, 0.49, 0.57, 0.6, 0.75, 0.75, 0.84, 0.85, 1.2, 1.1, 1.04, 0.91, 0.75, 0.8], "b2026_run": [0.61, 0.565, 0.54, 0.5475, 0.558, 0.59, 0.6128571428571429, 0.64125, 0.6644444444444444, 0.718, 0.7527272727272727, 0.7766666666666667, 0.786923076923077, 0.7842857142857144, 0.7853333333333333], "p2027": [0.73, 0.65, 0.6, 0.75, 0.8, 0.85, 0.91, 1.1, 1.05, 1.35, 1.26, 1.2, 1.05, 0.85, 0.88], "b2027_run": [0.73, 0.69, 0.66, 0.6825, 0.7060000000000001, 0.73, 0.7557142857142857, 0.7987500000000001, 0.8266666666666667, 0.8790000000000001, 0.9136363636363637, 0.9375, 0.9461538461538462, 0.9392857142857143, 0.9353333333333335], "Hydro-Old_v2026_run": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0.6058823529411764], "Hydro-Old_v2027_run": [null, null, null, null, null, null, null, null, 1.1333333333333333, 1.1333333333333333, 1.1333333333333333, 1.1333333333333333, 1.1333333333333333, 1.1333333333333333, 1.1333333333333333], "Hellandsfoss_v2026_run": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0.7266566265060241], "Hellandsfoss_v2027_run": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]}, "hedges": [{"id": 15179, "product": "Hydro-Old-Norway-No support-27", "book": "Hydro-Old", "year": 2027, "production_range": "2027-01-01 - 2027-03-31", "volume": 25000.0, "price": 1.0, "value": 25000.0, "date": "2027-04-20"}, {"id": 15179, "product": "Hydro-Old-Norway-No support-27", "book": "Hydro-Old", "year": 2027, "production_range": "2027-07-01 - 2027-09-30", "volume": 50000.0, "price": 1.2, "value": 60000.0, "date": "2027-10-18"}, {"id": 14960, "product": "Hydro-Old-Norway-No support-26", "book": "Hydro-Old", "year": 2026, "production_range": "2026-01-01 - 2026-03-31", "volume": 50000.0, "price": 0.54, "value": 27000.0, "date": "2026-04-20"}, {"id": 14960, "product": "Hydro-Old-Norway-No support-26", "book": "Hydro-Old", "year": 2026, "production_range": "2026-01-01 - 2026-03-31", "volume": 25000.0, "price": 0.7, "value": 17500.0, "date": "2026-04-20"}, {"id": 14960, "product": "Hellandsfoss (Modalen)-Hydro-Old-Medium-Norway-Bra Milj\u00f6val-No support-26", "book": "Hellandsfoss", "year": 2026, "production_range": "2026-01-01 - 2026-12-31", "volume": 25000.0, "price": 0.965, "value": 24125.0, "date": "2026-01-12"}, {"id": 14960, "product": "Hellandsfoss (Modalen)-Hydro-Old-Medium-Norway-Bra Milj\u00f6val-No support-26", "book": "Hellandsfoss", "year": 2026, "production_range": "2026-02-01 - 2026-03-31", "volume": 8200.0, "price": 0.0, "value": 0.0, "date": "2026-01-12"}, {"id": 14960, "product": "Hydro-Old-Norway-No support-26", "book": "Hydro-Old", "year": 2026, "production_range": "2026-04-01 - 2026-06-30", "volume": 10000.0, "price": 0.7, "value": 7000.0, "date": "2026-07-01"}], "years": [2026, 2027], "text": {"_comment": "All editable text in the report. Edit this file to change wording without touching the template. Words wrapped in *asterisks* in section titles are rendered as colored italic accents (the color follows the section's accent color).", "cover": {"eyebrow": "Quarterly Hedging Review", "kicker": "Eviny Fornybar AS", "title_line_1": "Hedging", "title_line_2": "Report", "subtitle": "A quarterly review of price securings", "meta_prepared_label": "Prepared", "meta_counterparty_label": "Counterparty", "meta_benchmark_label": "Benchmark", "meta_benchmark_value": "ICAP \u00b7 Friday"}, "portfolio_section": {"section_label": "Portfolio", "title_html": "All books, one *review*.", "chart_title": "Portfolio VWAP vs. benchmark", "chart_sub": "EUR / MWh \u00b7 by book and year", "table_title": "Portfolio summary", "table_sub": "All price secured volumes"}, "book_section": {"_comment": "Used for each book section. {label} is replaced with the book's display name. {n} with the book number (01, 02...).", "section_label": "Book {n}", "title_html": "{label}*.*", "annual_chart_title": "Hedged vs. remaining volume", "annual_table_title": "Annual hedging status", "qstatus_title": "Quarterly hedging status", "qstatus_sub": "{label} \u00b7 target = annual \u00f7 4", "qvol_title": "Quarterly hedged volume vs target", "qrev_title": "Quarterly hedged revenue", "vwapq_title": "VWAP per quarter vs. benchmark", "icap_title": "ICAP benchmark prices per vintage", "icap_sub": "{label} \u00b7 weekly EUR/MWh", "uplift_kpi_label": "Excess revenue \u00b7 {year}", "uplift_kpi_foot": "Extra earned above benchmark", "uplift_card_title": "Excess vs. benchmark", "uplift_card_sub": "{label} \u00b7 (VWAP \u2212 bench) \u00d7 hedged volume", "uplift_table_headers": ["Year", "Hedged (MWh)", "VWAP", "Benchmark", "\u0394 per MWh", "Uplift (EUR)"]}, "kpi_labels": {"hedge_ratio": "Hedge Ratio \u00b7 {year}", "hedge_ratio_foot": "of {annual} MWh", "vwap": "VWAP \u00b7 {year}", "vwap_foot_no_volume": "No volume secured", "vwap_foot_vs_bench": "vs bench {bench}"}, "table_headers": {"annual": ["Year", "Annual", "Hedged", "Remaining", "%"], "quarterly": ["Year", "Quarter", "Target (MWh)", "Hedged (MWh)", "Remaining", "%", "VWAP"], "portfolio": ["Book", "Year", "Annual (MWh)", "Hedged (MWh)", "% of Annual", "VWAP", "Benchmark", "\u0394 vs Bench"], "hedges": ["Book", "Year", "Product", "Production Range", "Price", "Volume (MWh)", "Value (EUR)"]}, "hedge_list_section": {"section_label": "Detail", "title_html": "Every *line*."}, "footer": {"title": "Hedging Report \u00b7 Eviny Fornybar AS", "line_1": "Prepared by Ecohz \u00b7 Benchmark: ICAP Friday Prices (equal-weighted)", "line_2": "Scope: Price Secured lines only"}}, "assets": {"symbol_white": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 90 90\" fill=\"#FCFCFC\">\n  <!-- Ecohz symbol: 9x9 grid, three horizontal bars per brand guidelines.\n       Top bar: 9w x 2h. Middle bar: 4w x 1h (offset). Bottom bar: 9w x 1h. -->\n  <rect x=\"0\"  y=\"20\" width=\"90\" height=\"20\"/>\n  <rect x=\"0\"  y=\"45\" width=\"40\" height=\"10\"/>\n  <rect x=\"0\"  y=\"60\" width=\"90\" height=\"10\"/>\n</svg>", "symbol_black": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 90 90\" fill=\"#191919\">\n  <rect x=\"0\"  y=\"20\" width=\"90\" height=\"20\"/>\n  <rect x=\"0\"  y=\"45\" width=\"40\" height=\"10\"/>\n  <rect x=\"0\"  y=\"60\" width=\"90\" height=\"10\"/>\n</svg>", "graphic_elements_white": ["<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><defs><style>.cls-1{fill:#fff;}</style></defs><rect class=\"cls-1\" x=\"30.36\" y=\"110\" width=\"90\" height=\"10\"/><rect class=\"cls-1\" x=\"30.37\" y=\"80\" width=\"60\" height=\"20\"/><rect class=\"cls-1\" x=\"30.36\" y=\"30\" width=\"90\" height=\"40\"/></svg>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><defs><style>.cls-1{fill:#fff;}</style></defs><rect class=\"cls-1\" x=\"30.36\" y=\"60\" width=\"60\" height=\"10\"/><rect class=\"cls-1\" x=\"30.36\" y=\"30\" width=\"90\" height=\"20\"/><rect class=\"cls-1\" x=\"30.36\" y=\"80\" width=\"90\" height=\"40\"/></svg>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><defs><style>.cls-1{fill:#fff;}</style></defs><rect class=\"cls-1\" x=\"30.36\" y=\"30\" width=\"90\" height=\"10\"/><rect class=\"cls-1\" x=\"30.36\" y=\"100\" width=\"90\" height=\"20\"/><rect class=\"cls-1\" x=\"30.36\" y=\"50\" width=\"60\" height=\"40\"/></svg>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><defs><style>.cls-1{fill:#fff;}</style></defs><g><rect class=\"cls-1\" x=\"30.36\" y=\"65.56\" width=\"90\" height=\"4.44\"/><rect class=\"cls-1\" x=\"30.36\" y=\"52.22\" width=\"90\" height=\"8.89\"/><rect class=\"cls-1\" x=\"30.36\" y=\"30\" width=\"90\" height=\"17.78\"/></g><g><rect class=\"cls-1\" x=\"30.36\" y=\"118.89\" width=\"90\" height=\"1.11\"/><rect class=\"cls-1\" x=\"30.36\" y=\"115.56\" width=\"90\" height=\"2.22\"/><rect class=\"cls-1\" x=\"30.36\" y=\"110\" width=\"90\" height=\"4.44\"/></g><g><rect class=\"cls-1\" x=\"30.36\" y=\"97.78\" width=\"60\" height=\"2.22\"/><rect class=\"cls-1\" x=\"30.36\" y=\"91.11\" width=\"60\" height=\"4.44\"/><rect class=\"cls-1\" x=\"30.36\" y=\"80\" width=\"60\" height=\"8.89\"/></g></svg>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><defs><style>.cls-1{fill:#fff;}</style></defs><g><rect class=\"cls-1\" x=\"30.36\" y=\"115.56\" width=\"90\" height=\"4.44\"/><rect class=\"cls-1\" x=\"30.36\" y=\"102.22\" width=\"90\" height=\"8.89\"/><rect class=\"cls-1\" x=\"30.36\" y=\"80\" width=\"90\" height=\"17.78\"/></g><g><rect class=\"cls-1\" x=\"30.36\" y=\"68.89\" width=\"60\" height=\"1.11\"/><rect class=\"cls-1\" x=\"30.36\" y=\"65.56\" width=\"60\" height=\"2.22\"/><rect class=\"cls-1\" x=\"30.36\" y=\"60\" width=\"60\" height=\"4.44\"/></g><g><rect class=\"cls-1\" x=\"30.36\" y=\"47.78\" width=\"90\" height=\"2.22\"/><rect class=\"cls-1\" x=\"30.36\" y=\"41.11\" width=\"90\" height=\"4.44\"/><rect class=\"cls-1\" x=\"30.36\" y=\"30\" width=\"90\" height=\"8.89\"/></g></svg>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><defs><style>.cls-1{fill:#fff;}</style></defs><g><rect class=\"cls-1\" x=\"30.36\" y=\"85.56\" width=\"60\" height=\"4.44\"/><rect class=\"cls-1\" x=\"30.36\" y=\"72.22\" width=\"60\" height=\"8.89\"/><rect class=\"cls-1\" x=\"30.36\" y=\"50\" width=\"60\" height=\"17.78\"/></g><g><rect class=\"cls-1\" x=\"30.36\" y=\"38.89\" width=\"90\" height=\"1.11\"/><rect class=\"cls-1\" x=\"30.36\" y=\"35.56\" width=\"90\" height=\"2.22\"/><rect class=\"cls-1\" x=\"30.36\" y=\"30\" width=\"90\" height=\"4.44\"/></g><g><rect class=\"cls-1\" x=\"30.36\" y=\"117.78\" width=\"90\" height=\"2.22\"/><rect class=\"cls-1\" x=\"30.36\" y=\"111.11\" width=\"90\" height=\"4.44\"/><rect class=\"cls-1\" x=\"30.36\" y=\"100\" width=\"90\" height=\"8.89\"/></g></svg>"], "graphic_elements_black": ["<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><rect x=\"30.36\" y=\"110\" width=\"90\" height=\"10\"/><rect x=\"30.37\" y=\"80\" width=\"60\" height=\"20\"/><rect x=\"30.36\" y=\"30\" width=\"90\" height=\"40\"/></svg>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><rect x=\"30.36\" y=\"60\" width=\"60\" height=\"10\"/><rect x=\"30.36\" y=\"30\" width=\"90\" height=\"20\"/><rect x=\"30.36\" y=\"80\" width=\"90\" height=\"40\"/></svg>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><rect x=\"30.36\" y=\"30\" width=\"90\" height=\"10\"/><rect x=\"30.36\" y=\"100\" width=\"90\" height=\"20\"/><rect x=\"30.36\" y=\"50\" width=\"60\" height=\"40\"/></svg>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><g><rect x=\"30.36\" y=\"65.56\" width=\"90\" height=\"4.44\"/><rect x=\"30.36\" y=\"52.22\" width=\"90\" height=\"8.89\"/><rect x=\"30.36\" y=\"30\" width=\"90\" height=\"17.78\"/></g><g><rect x=\"30.36\" y=\"118.89\" width=\"90\" height=\"1.11\"/><rect x=\"30.36\" y=\"115.56\" width=\"90\" height=\"2.22\"/><rect x=\"30.36\" y=\"110\" width=\"90\" height=\"4.44\"/></g><g><rect x=\"30.36\" y=\"97.78\" width=\"60\" height=\"2.22\"/><rect x=\"30.36\" y=\"91.11\" width=\"60\" height=\"4.44\"/><rect x=\"30.36\" y=\"80\" width=\"60\" height=\"8.89\"/></g></svg>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><g><rect x=\"30.36\" y=\"115.56\" width=\"90\" height=\"4.44\"/><rect x=\"30.36\" y=\"102.22\" width=\"90\" height=\"8.89\"/><rect x=\"30.36\" y=\"80\" width=\"90\" height=\"17.78\"/></g><g><rect x=\"30.36\" y=\"68.89\" width=\"60\" height=\"1.11\"/><rect x=\"30.36\" y=\"65.56\" width=\"60\" height=\"2.22\"/><rect x=\"30.36\" y=\"60\" width=\"60\" height=\"4.44\"/></g><g><rect x=\"30.36\" y=\"47.78\" width=\"90\" height=\"2.22\"/><rect x=\"30.36\" y=\"41.11\" width=\"90\" height=\"4.44\"/><rect x=\"30.36\" y=\"30\" width=\"90\" height=\"8.89\"/></g></svg>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150.72 150\"><g><rect x=\"30.36\" y=\"85.56\" width=\"60\" height=\"4.44\"/><rect x=\"30.36\" y=\"72.22\" width=\"60\" height=\"8.89\"/><rect x=\"30.36\" y=\"50\" width=\"60\" height=\"17.78\"/></g><g><rect x=\"30.36\" y=\"38.89\" width=\"90\" height=\"1.11\"/><rect x=\"30.36\" y=\"35.56\" width=\"90\" height=\"2.22\"/><rect x=\"30.36\" y=\"30\" width=\"90\" height=\"4.44\"/></g><g><rect x=\"30.36\" y=\"117.78\" width=\"90\" height=\"2.22\"/><rect x=\"30.36\" y=\"111.11\" width=\"90\" height=\"4.44\"/><rect x=\"30.36\" y=\"100\" width=\"90\" height=\"8.89\"/></g></svg>"]}, "access_hash": "395c5f2fe70bdce3e01c0aa9764632621c01017c99b1d475d10a67ec5ec1cd11"};
+const T = D.text;
+
+// ---- Access gate ----
+(function setupGate() {
+  const STORAGE_KEY = 'hedging_unlocked_' + (D.access_hash || 'none');
+  const gate = document.getElementById('gate');
+  const mark = document.getElementById('gate-mark');
+  const form = document.getElementById('gate-form');
+  const input = document.getElementById('gate-input');
+  const errEl = document.getElementById('gate-error');
+
+  // Render Ecohz symbol into gate
+  if (mark && D.assets && D.assets.symbol_white) {
+    mark.innerHTML = D.assets.symbol_white;
+  }
+
+  // No password configured → unlock immediately
+  if (!D.access_hash) {
+    document.body.classList.add('unlocked');
+    return;
+  }
+
+  // Already unlocked this session
+  try {
+    if (sessionStorage.getItem(STORAGE_KEY) === '1') {
+      document.body.classList.add('unlocked');
+      return;
+    }
+  } catch (e) { /* sessionStorage blocked — just show the gate every time */ }
+
+  async function sha256Hex(str) {
+    const buf = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hash))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errEl.textContent = '';
+    const entered = input.value.trim();
+    if (!entered) return;
+    const h = await sha256Hex(entered);
+    if (h === D.access_hash) {
+      try { sessionStorage.setItem(STORAGE_KEY, '1'); } catch (e) {}
+      document.body.classList.add('unlocked');
+    } else {
+      errEl.textContent = 'Incorrect code. Please try again.';
+      input.value = '';
+      input.focus();
+    }
+  });
+})();
+
+const fmt0 = n => Math.round(n).toLocaleString('en-US');
+const fmt2 = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt3 = n => n.toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:3});
+const pct = n => (n*100).toFixed(1)+'%';
+
+const BRAND = {
+  softBlack: '#191919',
+  offWhite: '#FCFCFC',
+  greyDark: '#606060',
+  greyLight: '#D4D4D4',
+  greySoft: '#F5F5F5',
+  blue: { base:'#0075E7', bright:'#8EC2FF', light:'#C3DEFF' },
+  green: { base:'#00A368', bright:'#46D387', light:'#A8EDB3' },
+  red: { base:'#FF5C38', bright:'#FF9078', light:'#FFC4BC' },
+  orange: { base:'#FFC04E', bright:'#FFD385', light:'#FFE8C0' },
+};
+function colorSet(name) { return BRAND[name] || BRAND.blue; }
+
+function emify(s, accentClass) {
+  return (s || '').replace(/\*([^*]+)\*/g, `<span class="${accentClass}">$1</span>`);
+}
+function tmpl(s, vars) {
+  return (s || '').replace(/\{(\w+)\}/g, (m, k) => vars[k] !== undefined ? vars[k] : m);
+}
+
+// Brand assets
+document.getElementById('ecohz-mark').innerHTML = D.assets.symbol_white;
+const coverGraphicSvg = (D.assets.graphic_elements_white || [])[0] || '';
+document.getElementById('cover-graphic').innerHTML = coverGraphicSvg;
+
+// Cover text
+document.getElementById('cover-eyebrow').textContent = `${T.cover.eyebrow} · ${D.review_period}`;
+document.getElementById('cover-headline').innerHTML =
+  `${T.cover.title_line_1}<span class="accent">${T.cover.title_line_2}</span>`;
+document.getElementById('cover-sub').textContent = T.cover.subtitle;
+document.getElementById('meta-prepared-label').textContent = T.cover.meta_prepared_label;
+document.getElementById('meta-prepared-value').textContent = D.prepared_date;
+document.getElementById('meta-counterparty-label').textContent = T.cover.meta_counterparty_label;
+document.getElementById('meta-counterparty-value').textContent = D.vendor_name;
+document.getElementById('meta-period-value').textContent = D.review_period;
+document.getElementById('meta-benchmark-label').textContent = T.cover.meta_benchmark_label;
+document.getElementById('meta-benchmark-value').textContent = T.cover.meta_benchmark_value;
+
+// Portfolio section
+document.getElementById('portfolio-section-label').textContent = T.portfolio_section.section_label;
+document.getElementById('portfolio-section-title').innerHTML = emify(T.portfolio_section.title_html, 'accent');
+document.getElementById('portfolio-chart-title').textContent = T.portfolio_section.chart_title;
+document.getElementById('portfolio-chart-sub').textContent = T.portfolio_section.chart_sub;
+document.getElementById('portfolio-table-title').textContent = T.portfolio_section.table_title;
+document.getElementById('portfolio-table-sub').textContent = T.portfolio_section.table_sub;
+document.getElementById('portfolio-thead').innerHTML =
+  T.table_headers.portfolio.map(h => `<th>${h}</th>`).join('');
+
+// Hedge list section
+document.getElementById('hedges-section-label').textContent = T.hedge_list_section.section_label;
+document.getElementById('hedges-section-title').innerHTML = emify(T.hedge_list_section.title_html, 'accent');
+document.getElementById('hedges-thead').innerHTML =
+  T.table_headers.hedges.map((h, i) => i < 3 ? `<div>${h}</div>` : `<div class="num">${h}</div>`).join('');
+
+// Footer
+document.getElementById('footer-title').textContent = T.footer.title;
+document.getElementById('footer-line-1').textContent = T.footer.line_1;
+document.getElementById('footer-line-2').textContent = T.footer.line_2;
+document.getElementById('footer-prepared').textContent = D.prepared_date;
+
+const bookKeys = Object.keys(D.books_meta);
+const years = D.years;
+const bench = D.bench;
+
+// Portfolio chart
+const portLabels = [];
+const portVwap = [];
+const portBench = [];
+const portColors = [];
+bookKeys.forEach(k => {
+  const c = colorSet(D.books_meta[k].color || 'blue').base;
+  years.forEach(y => {
+    portLabels.push(`${D.books_meta[k].label} ${y}`);
+    portVwap.push(D.books[k][y].vwap);
+    portBench.push(bench[y]);
+    portColors.push(c);
+  });
+});
+
+Chart.defaults.font.family = "'PP Telegraf', Arial, sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = BRAND.softBlack;
+Chart.defaults.borderColor = BRAND.greyLight;
+const gridOpts = {
+  grid: { color: 'rgba(25,25,25,0.06)', drawBorder: false },
+  ticks: { color: BRAND.softBlack, font: { family: "'PP Telegraf', Arial, sans-serif", size: 11 } }
+};
+
+new Chart(document.getElementById('chartPortfolio'), {
+  type: 'bar',
+  data: {
+    labels: portLabels,
+    datasets: [
+      { label: 'VWAP (secured)', data: portVwap, backgroundColor: portColors, borderRadius: 0, barThickness: 50 },
+      { label: 'ICAP benchmark', data: portBench, backgroundColor: BRAND.softBlack, borderRadius: 0, barThickness: 50 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, padding: 16 } } },
+    scales: { x: gridOpts, y: { ...gridOpts, ticks: { ...gridOpts.ticks, callback: v => fmt3(v)+' €' } } }
+  }
+});
+
+// Portfolio table
+let portHTML = '';
+bookKeys.forEach(k => {
+  years.forEach(y => {
+    const ann = D.annual[k][y];
+    const bd = D.books[k][y];
+    const ratio = ann ? pct(bd.hedged/ann) : '—';
+    const annStr = ann ? fmt0(ann) : '—';
+    const hasVol = bd.hedged > 0;
+    const vwap = hasVol ? fmt3(bd.vwap) : '—';
+    const delta = hasVol ? bd.vwap - bench[y] : null;
+    const deltaHTML = hasVol
+      ? `<span class="badge ${delta>=0?'up':'down'}">${delta>=0?'+':''}${fmt3(delta)}</span>`
+      : `<span class="muted">—</span>`;
+    portHTML += `<tr><td>${D.books_meta[k].label}</td><td>${y}</td><td class="num">${annStr}</td><td class="num">${fmt0(bd.hedged)}</td><td class="num">${ratio}</td><td class="num">${vwap}</td><td class="num">${fmt3(bench[y])}</td><td class="num">${deltaHTML}</td></tr>`;
+  });
+});
+document.getElementById('tbl-portfolio').innerHTML = portHTML;
+
+// Per-book sections
+const sectionsHost = document.getElementById('book-sections');
+bookKeys.forEach((k, ki) => {
+  const meta = D.books_meta[k];
+  const colorName = meta.color || 'blue';
+  const colors = colorSet(colorName);
+  const slug = k.replace(/[^a-z0-9]/gi, '').toLowerCase();
+  const num = String(ki + 2).padStart(2, '0');
+
+  // KPI tiles
+  const showUplift = !!meta.show_uplift;
+  const colClass = showUplift ? ' cols-6' : '';
+  let kpiHTML = `<div class="kpi-grid${colClass}">`;
+  years.forEach(y => {
+    const ann = D.annual[k][y];
+    const bd = D.books[k][y];
+    const ratio = ann ? (bd.hedged/ann*100).toFixed(1)+'<span class="unit">%</span>' : '—';
+    const label = tmpl(T.kpi_labels.hedge_ratio, { year: y });
+    const foot = tmpl(T.kpi_labels.hedge_ratio_foot, { annual: ann ? fmt0(ann) : '—' });
+    kpiHTML += `<div class="kpi"><div class="kpi-label">${label}</div><div class="kpi-value">${ratio}</div><div class="kpi-foot">${foot}</div></div>`;
+  });
+  years.forEach(y => {
+    const bd = D.books[k][y];
+    const hasVol = bd.hedged > 0;
+    const vwap = hasVol ? fmt3(bd.vwap)+'<span class="unit">€/MWh</span>' : '—';
+    const label = tmpl(T.kpi_labels.vwap, { year: y });
+    let foot = T.kpi_labels.vwap_foot_no_volume;
+    if (hasVol) {
+      const d = bd.vwap - bench[y];
+      const vsbench = tmpl(T.kpi_labels.vwap_foot_vs_bench, { bench: fmt3(bench[y]) });
+      foot = `<span class="badge ${d>=0?'up':'down'}">${d>=0?'▲':'▼'} ${fmt3(Math.abs(d))}</span> ${vsbench}`;
+    }
+    kpiHTML += `<div class="kpi"><div class="kpi-label">${label}</div><div class="kpi-value">${vwap}</div><div class="kpi-foot">${foot}</div></div>`;
+  });
+
+  // Uplift tiles — one per year if show_uplift is true
+  let totalUplift = 0;
+  const upliftPerYear = {};
+  years.forEach(y => {
+    const bd = D.books[k][y];
+    const u = bd.hedged > 0 ? (bd.vwap - bench[y]) * bd.hedged : 0;
+    upliftPerYear[y] = u;
+    totalUplift += u;
+  });
+  if (showUplift) {
+    years.forEach(y => {
+      const bd = D.books[k][y];
+      const hasVol = bd.hedged > 0;
+      const u = upliftPerYear[y];
+      const label = tmpl(T.book_section.uplift_kpi_label, { year: y });
+      let valueHTML, footHTML;
+      if (!hasVol) {
+        valueHTML = '—';
+        footHTML = T.kpi_labels.vwap_foot_no_volume;
+      } else {
+        const sign = u < 0 ? '−' : '';
+        const valColor = u >= 0 ? colors.base : '#FF5C38';
+        valueHTML = `<span style="color:${valColor}">${sign}€${fmt0(Math.abs(u))}</span>`;
+        footHTML = T.book_section.uplift_kpi_foot;
+      }
+      kpiHTML += `<div class="kpi"><div class="kpi-label">${label}</div><div class="kpi-value">${valueHTML}</div><div class="kpi-foot">${footHTML}</div></div>`;
+    });
+  }
+  kpiHTML += '</div>';
+
+  // ICAP chart markup (only if enabled for this book)
+  const showIcap = !!meta.show_icap_chart;
+  const icapCard = showIcap ? `
+    <div class="card" style="margin-top:32px">
+      <div class="card-head">
+        <div class="card-title">${T.book_section.icap_title}</div>
+        <div class="card-sub">${tmpl(T.book_section.icap_sub, { label: meta.label })}</div>
+      </div>
+      <div class="chart-wrap xtall"><canvas id="${slug}-icap"></canvas></div>
+    </div>
+  ` : '';
+
+  const sectionLabel = tmpl(T.book_section.section_label, { n: num });
+  const sectionTitleHTML = emify(tmpl(T.book_section.title_html, { label: meta.label }), 'accent');
+  const annualHeaders = T.table_headers.annual.map(h => `<th>${h}</th>`).join('');
+  const qHeaders = T.table_headers.quarterly.map(h => `<th>${h}</th>`).join('');
+
+  // Uplift card (only if enabled)
+  let upliftCard = '';
+  if (showUplift) {
+    const upliftHeaders = T.book_section.uplift_table_headers.map(h => `<th>${h}</th>`).join('');
+    let upliftRows = '';
+    let tVol = 0;
+    years.forEach(y => {
+      const bd = D.books[k][y];
+      const hasVol = bd.hedged > 0;
+      if (!hasVol) {
+        upliftRows += `<tr><td>${y}</td><td class="num muted">—</td><td class="num muted">—</td><td class="num">${fmt3(bench[y])}</td><td class="num muted">—</td><td class="num muted">—</td></tr>`;
+        return;
+      }
+      const delta = bd.vwap - bench[y];
+      const u = upliftPerYear[y];
+      upliftRows += `<tr><td>${y}</td><td class="num">${fmt0(bd.hedged)}</td><td class="num">${fmt3(bd.vwap)}</td><td class="num">${fmt3(bench[y])}</td><td class="num">${delta>=0?'+':''}${fmt3(delta)}</td><td class="num">€${fmt0(u)}</td></tr>`;
+      tVol += bd.hedged;
+    });
+    upliftRows += `<tr class="total"><td>Total</td><td class="num">${fmt0(tVol)}</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">€${fmt0(totalUplift)}</td></tr>`;
+    upliftCard = `
+      <div class="card" style="margin-top:32px">
+        <div class="card-head">
+          <div class="card-title">${T.book_section.uplift_card_title}</div>
+          <div class="card-sub">${tmpl(T.book_section.uplift_card_sub, { label: meta.label })}</div>
+        </div>
+        <table class="fin">
+          <thead><tr>${upliftHeaders}</tr></thead>
+          <tbody>${upliftRows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  const sec = document.createElement('section');
+  sec.innerHTML = `
+    <div class="section-head">
+      <div class="section-num">${sectionLabel}</div>
+      <h2 class="section-title">${sectionTitleHTML}</h2>
+    </div>
+    <div class="book-bar">
+      <div class="tag">${meta.tag}</div>
+      <div class="name">${meta.label} · ${meta.subtitle}</div>
+      <div class="pill" style="background:${colors.base}">${meta.pill}</div>
+    </div>
+    ${kpiHTML}
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">${T.book_section.annual_chart_title}</div>
+          <div class="card-sub">MWh · ${meta.label}</div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="${slug}-annual"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">${T.book_section.annual_table_title}</div>
+          <div class="card-sub">${meta.label}</div>
+        </div>
+        <table class="fin">
+          <thead><tr>${annualHeaders}</tr></thead>
+          <tbody id="${slug}-tbl-status"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-top:32px">
+      <div class="card-head">
+        <div class="card-title">${T.book_section.qstatus_title}</div>
+        <div class="card-sub">${tmpl(T.book_section.qstatus_sub, { label: meta.label })}</div>
+      </div>
+      <table class="fin">
+        <thead><tr>${qHeaders}</tr></thead>
+        <tbody id="${slug}-tbl-qstatus"></tbody>
+      </table>
+    </div>
+    ${upliftCard}
+    <div class="grid-2-eq">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">${T.book_section.qvol_title}</div>
+          <div class="card-sub">MWh · ${meta.label}</div>
+        </div>
+        <div class="chart-wrap"><canvas id="${slug}-qvol"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">${T.book_section.qrev_title}</div>
+          <div class="card-sub">EUR · ${meta.label}</div>
+        </div>
+        <div class="chart-wrap"><canvas id="${slug}-qrev"></canvas></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:32px">
+      <div class="card-head">
+        <div class="card-title">${T.book_section.vwapq_title}</div>
+        <div class="card-sub">EUR / MWh · ${meta.label}</div>
+      </div>
+      <div class="chart-wrap tall"><canvas id="${slug}-vwapq"></canvas></div>
+    </div>
+    ${icapCard}
+  `;
+  sectionsHost.appendChild(sec);
+
+  // Override accent color per book
+  sec.querySelectorAll('.section-title .accent').forEach(el => {
+    el.style.color = colors.base;
+  });
+
+  // Annual status table
+  let statusHTML = '';
+  let tA = 0, tH = 0;
+  years.forEach(y => {
+    const ann = D.annual[k][y], hed = D.books[k][y].hedged, rem = ann - hed;
+    statusHTML += `<tr><td>${y}</td><td class="num">${fmt0(ann)}</td><td class="num">${fmt0(hed)}</td><td class="num">${fmt0(rem)}</td><td class="num">${ann?pct(hed/ann):'—'}</td></tr>`;
+    tA += ann; tH += hed;
+  });
+  statusHTML += `<tr class="total"><td>Total</td><td class="num">${fmt0(tA)}</td><td class="num">${fmt0(tH)}</td><td class="num">${fmt0(tA-tH)}</td><td class="num">${tA?pct(tH/tA):'—'}</td></tr>`;
+  document.getElementById(`${slug}-tbl-status`).innerHTML = statusHTML;
+
+  // Quarterly status table
+  let qStatusHTML = '';
+  years.forEach(y => {
+    const target = D.quarterly_target[k][y];
+    let yTotalH = 0;
+    for (let qi = 0; qi < 4; qi++) {
+      const hed = D.books[k][y].q_vol[qi];
+      const rem = Math.max(0, target - hed);
+      const ratio = target ? pct(hed/target) : '—';
+      const vwap = hed > 0 ? fmt3(D.books[k][y].q_vwap[qi]) : '—';
+      qStatusHTML += `<tr><td>${y}</td><td>Q${qi+1}</td><td class="num">${fmt0(target)}</td><td class="num">${fmt0(hed)}</td><td class="num">${fmt0(rem)}</td><td class="num">${ratio}</td><td class="num">${vwap}</td></tr>`;
+      yTotalH += hed;
+    }
+    const yAnnual = D.annual[k][y];
+    qStatusHTML += `<tr class="total"><td>${y}</td><td>Total</td><td class="num">${fmt0(yAnnual)}</td><td class="num">${fmt0(yTotalH)}</td><td class="num">${fmt0(Math.max(0,yAnnual-yTotalH))}</td><td class="num">${yAnnual?pct(yTotalH/yAnnual):'—'}</td><td class="num">${yTotalH>0?fmt3(D.books[k][y].vwap):'—'}</td></tr>`;
+  });
+  document.getElementById(`${slug}-tbl-qstatus`).innerHTML = qStatusHTML;
+
+  // Annual stacked bar
+  new Chart(document.getElementById(`${slug}-annual`), {
+    type: 'bar',
+    data: {
+      labels: years.map(String),
+      datasets: [
+        { label: 'Hedged', data: years.map(y => D.books[k][y].hedged), backgroundColor: colors.base, barThickness: 80 },
+        { label: 'Remaining', data: years.map(y => Math.max(0, (D.annual[k][y] || 0) - D.books[k][y].hedged)), backgroundColor: colors.light, barThickness: 80 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, padding: 16 } } },
+      scales: { x: { ...gridOpts, stacked: true }, y: { ...gridOpts, stacked: true, ticks: { ...gridOpts.ticks, callback: v => fmt0(v) } } }
+    }
+  });
+
+  // Quarterly volume vs target
+  const qVolDatasets = years.map((y, yi) => ({
+    type: 'bar',
+    label: String(y),
+    data: D.books[k][y].q_vol,
+    backgroundColor: yi === 0 ? colors.base : colors.bright,
+  }));
+  years.forEach((y, yi) => {
+    const t = D.quarterly_target[k][y];
+    if (t > 0) {
+      qVolDatasets.push({
+        type: 'line',
+        label: `${y} target`,
+        data: [t, t, t, t],
+        borderColor: yi === 0 ? BRAND.softBlack : BRAND.greyDark,
+        borderWidth: 1.5,
+        borderDash: [5, 4],
+        pointRadius: 0,
+        fill: false,
+        tension: 0,
+      });
+    }
+  });
+  new Chart(document.getElementById(`${slug}-qvol`), {
+    data: { labels: ['Q1','Q2','Q3','Q4'], datasets: qVolDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, padding: 14 } } },
+      scales: { x: gridOpts, y: { ...gridOpts, ticks: { ...gridOpts.ticks, callback: v => fmt0(v) } } }
+    }
+  });
+
+  // Quarterly revenue
+  new Chart(document.getElementById(`${slug}-qrev`), {
+    type: 'bar',
+    data: {
+      labels: ['Q1','Q2','Q3','Q4'],
+      datasets: years.map((y, yi) => ({
+        label: String(y),
+        data: D.books[k][y].q_val,
+        backgroundColor: yi === 0 ? colors.base : colors.bright,
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, padding: 16 } } },
+      scales: { x: gridOpts, y: { ...gridOpts, ticks: { ...gridOpts.ticks, callback: v => '€'+fmt0(v) } } }
+    }
+  });
+
+  // VWAP per quarter w/ benchmark
+  const allQVwap = [];
+  const allQLabels = [];
+  const allQColors = [];
+  years.forEach((y, yi) => {
+    D.books[k][y].q_vwap.forEach((v, qi) => {
+      allQVwap.push(v);
+      allQLabels.push(`${y} Q${qi+1}`);
+      allQColors.push(yi === 0 ? colors.base : colors.bright);
+    });
+  });
+  const benchLine = [];
+  years.forEach(y => { for (let i = 0; i < 4; i++) benchLine.push(bench[y]); });
+
+  new Chart(document.getElementById(`${slug}-vwapq`), {
+    data: {
+      labels: allQLabels,
+      datasets: [
+        { type: 'bar', label: 'VWAP per quarter', data: allQVwap, backgroundColor: allQColors },
+        { type: 'line', label: 'Benchmark', data: benchLine, borderColor: BRAND.softBlack, borderWidth: 2, borderDash: [6, 4], pointRadius: 0, fill: false, tension: 0 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, padding: 16 } } },
+      scales: { x: gridOpts, y: { ...gridOpts, ticks: { ...gridOpts.ticks, callback: v => fmt3(v)+' €' } } }
+    }
+  });
+
+  // ICAP time series — raw weekly prices per vintage (only if enabled)
+  if (showIcap) {
+    const icapDatasets = years.map((y, yi) => {
+      const c = yi === 0 ? colors.base : colors.bright;
+      return {
+        label: `${y} ICAP price`,
+        data: D.icap_ts[`p${y}`],
+        borderColor: c,
+        backgroundColor: 'transparent',
+        borderWidth: 2.5,
+        pointRadius: 3,
+        pointBackgroundColor: c,
+        tension: .25,
+        fill: false,
+      };
+    });
+
+    new Chart(document.getElementById(`${slug}-icap`), {
+      type: 'line',
+      data: { labels: D.icap_ts.dates, datasets: icapDatasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, padding: 14 } } },
+        scales: { x: gridOpts, y: { ...gridOpts, ticks: { ...gridOpts.ticks, callback: v => fmt2(v)+' €' } } }
+      }
+    });
+  }
+});
+
+// Hedge list
+let hedgeHTML = '';
+const sortedHedges = [...D.hedges].sort((a, b) =>
+  a.book.localeCompare(b.book) || a.year - b.year || a.production_range.localeCompare(b.production_range)
+);
+sortedHedges.forEach(h => {
+  const colorName = (D.books_meta[h.book] && D.books_meta[h.book].color) || 'blue';
+  hedgeHTML += `<div class="hedge-row">
+    <div><span class="chip ${colorName}">${h.book}</span></div>
+    <div><span class="chip year">${h.year}</span></div>
+    <div class="prod">${h.product}</div>
+    <div class="num">${h.production_range}</div>
+    <div class="num">${fmt3(h.price)}</div>
+    <div class="num">${fmt0(h.volume)}</div>
+    <div class="num">${fmt2(h.value)}</div>
+  </div>`;
+});
+document.getElementById('hedge-rows').innerHTML = hedgeHTML;
+</script>
+</body>
+</html>
